@@ -78,6 +78,7 @@ var download = function (message, url) { return __awaiter(void 0, void 0, void 0
                 return [4 /*yield*/, message.channel.send(embed)];
             case 1:
                 reply = _a.sent();
+                console.log("Download requested by " + message.author.username);
                 video = youtube_dl_1.default(url, [], { cwd: __dirname });
                 video.once('info', function (info) { return __awaiter(void 0, void 0, void 0, function () {
                     var filenameLong, filenameArr, filename, str, proc, filePath;
@@ -95,6 +96,7 @@ var download = function (message, url) { return __awaiter(void 0, void 0, void 0
                                 return [4 /*yield*/, reply.edit(embed)];
                             case 1:
                                 _a.sent();
+                                console.log("Downloading " + filename);
                                 str = progress_stream_1.default({
                                     length: info.size,
                                     time: 500,
@@ -104,6 +106,7 @@ var download = function (message, url) { return __awaiter(void 0, void 0, void 0
                                     var progressBar = makeProgressBar(percentage, 30);
                                     embed.setDescription(progressBar + " " + percentage + " % / eta " + prog.eta + " s");
                                     reply.edit(embed);
+                                    console.log("Downloaded " + percentage + " %");
                                 });
                                 proc = fluent_ffmpeg_1.default({ source: video.pipe(str) });
                                 filePath = path_1.default.join('download', filename + '.mp3');
@@ -114,6 +117,7 @@ var download = function (message, url) { return __awaiter(void 0, void 0, void 0
                                             case 0:
                                                 embed.setDescription('Download complete');
                                                 reply.edit(embed);
+                                                console.log('Download completed');
                                                 return [4 /*yield*/, message.channel.send({
                                                         files: [filePath],
                                                     })];

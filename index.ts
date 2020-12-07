@@ -39,6 +39,8 @@ const download = async (message: Message, url: string) => {
     .setDescription('Preparing download');
     const reply:Message = await message.channel.send(embed); 
 
+    console.log(`Download requested by ${message.author.username}`);
+
     const video: Youtubedl = youtubedl(url, [], { cwd: __dirname });
 
     video.once('info', async (info) => {
@@ -53,6 +55,8 @@ const download = async (message: Message, url: string) => {
         .setDescription('Preparing download');
         await reply.edit(embed);
 
+        console.log(`Downloading ${filename}`);
+
         const str = progress({
             length: info.size,
             time: 500,
@@ -63,6 +67,7 @@ const download = async (message: Message, url: string) => {
             const progressBar:string = makeProgressBar(percentage, 30);
             embed.setDescription(`${progressBar} ${percentage} % / eta ${prog.eta} s`);
             reply.edit(embed);
+            console.log(`Downloaded ${percentage} %`);
         });
         
         const proc = ffmpeg({ source: video.pipe(str) });
@@ -73,6 +78,7 @@ const download = async (message: Message, url: string) => {
         video.on('close', async () => {
             embed.setDescription('Download complete');
             reply.edit(embed);
+            console.log('Download completed');
             await message.channel.send({
                 files: [ filePath ],
             });
