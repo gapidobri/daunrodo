@@ -72,42 +72,76 @@ var download = function (message, url) { return __awaiter(void 0, void 0, void 0
         switch (_a.label) {
             case 0:
                 embed = new discord_js_1.MessageEmbed()
-                    .setTitle('Downloading');
+                    .setTitle('Downloading')
+                    .setURL(url)
+                    .setDescription('Preparing download');
                 return [4 /*yield*/, message.channel.send(embed)];
             case 1:
                 reply = _a.sent();
                 video = youtube_dl_1.default(url, [], { cwd: __dirname });
-                video.on('info', function (info) {
-                    var filename = info._filename.replace('.mp4', '');
-                    var str = progress_stream_1.default({
-                        length: info.size,
-                        time: 500,
+                video.once('info', function (info) { return __awaiter(void 0, void 0, void 0, function () {
+                    var filenameLong, filenameArr, filename, str, proc, filePath;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                filenameLong = info._filename.replace('.mp4', '');
+                                filenameArr = filenameLong.split('-');
+                                filenameArr.pop();
+                                filename = filenameArr.join('-');
+                                embed
+                                    .setTitle("Downloading **" + filename + "**")
+                                    .setURL(url)
+                                    .setDescription('Preparing download');
+                                return [4 /*yield*/, reply.edit(embed)];
+                            case 1:
+                                _a.sent();
+                                str = progress_stream_1.default({
+                                    length: info.size,
+                                    time: 500,
+                                });
+                                str.on('progress', function (prog) {
+                                    var percentage = Math.round(prog.percentage);
+                                    var progressBar = makeProgressBar(percentage, 30);
+                                    embed.setDescription(progressBar + " " + percentage + " % / eta " + prog.eta + " s");
+                                    reply.edit(embed);
+                                });
+                                proc = fluent_ffmpeg_1.default({ source: video.pipe(str) });
+                                filePath = path_1.default.join('download', filename + '.mp3');
+                                proc.saveToFile(filePath);
+                                video.on('close', function () { return __awaiter(void 0, void 0, void 0, function () {
+                                    return __generator(this, function (_a) {
+                                        switch (_a.label) {
+                                            case 0:
+                                                embed.setDescription('Download complete');
+                                                reply.edit(embed);
+                                                return [4 /*yield*/, message.channel.send({
+                                                        files: [filePath],
+                                                    })];
+                                            case 1:
+                                                _a.sent();
+                                                fs_1.default.unlinkSync(filePath);
+                                                return [2 /*return*/];
+                                        }
+                                    });
+                                }); });
+                                return [2 /*return*/];
+                        }
                     });
-                    str.on('progress', function (prog) {
-                        embed.setTitle('Downloaded ' + Math.round(prog.percentage) + ' %');
-                        reply.edit(embed);
-                    });
-                    var proc = fluent_ffmpeg_1.default({ source: video.pipe(str) });
-                    var filePath = path_1.default.join('download', filename + '.mp3');
-                    proc.saveToFile(filePath);
-                    video.on('close', function () { return __awaiter(void 0, void 0, void 0, function () {
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0:
-                                    reply.delete();
-                                    return [4 /*yield*/, message.channel.send({
-                                            files: [filePath],
-                                        })];
-                                case 1:
-                                    _a.sent();
-                                    fs_1.default.unlinkSync(filePath);
-                                    return [2 /*return*/];
-                            }
-                        });
-                    }); });
-                });
+                }); });
                 return [2 /*return*/];
         }
     });
 }); };
+var makeProgressBar = function (percent, sections) {
+    var progressBar = '';
+    var secPercent = 100 / sections;
+    var secAmount = Math.round(percent / secPercent);
+    for (var i = 0; i < sections; i++) {
+        if (i <= secAmount)
+            progressBar += '█';
+        else
+            progressBar += '▒';
+    }
+    return progressBar;
+};
 bot.login(process.env.TOKEN);
