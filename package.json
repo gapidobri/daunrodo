@@ -12,8 +12,7 @@
   "devDependencies": {
     "@types/fluent-ffmpeg": "^2.1.16",
     "@types/progress-stream": "^2.0.1",
-    "@types/youtube-dl": "^3.0.0",
-    "@types/node": "^14.14.10"
+    "@types/youtube-dl": "^3.0.0"
   },
   "dependencies": {
     "discord.js": "^12.5.1",
